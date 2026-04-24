@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hotel Booking Analytics 2015-2017</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--border:rgba(255,255,255,0.07);--accent:#e8c547;--text:#e8e6df;--muted:#7a7870;--green:#69d38e;--red:#f0706a;--blue:#4fc3f7;--pink:#f06292;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow-x:hidden;}
+header{padding:3rem 3rem 2rem;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+header::before{content:'';position:absolute;top:-60px;left:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(232,197,71,0.08) 0%,transparent 70%);pointer-events:none;}
+.header-tag{font-size:11px;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:0.75rem;}
+h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.05;letter-spacing:-0.02em;}
+h1 span{color:var(--accent);}
+.header-sub{margin-top:0.75rem;font-size:13px;color:var(--muted);line-height:1.6;max-width:560px;}
+.header-meta{display:flex;gap:2rem;margin-top:1.5rem;flex-wrap:wrap;}
+.meta-item{font-size:11px;color:var(--muted);letter-spacing:0.08em;}
+.meta-item strong{color:var(--text);font-weight:500;}
+.filters{padding:1.25rem 3rem;border-bottom:1px solid var(--border);display:flex;gap:1rem;align-items:center;flex-wrap:wrap;background:var(--surface);}
+.filter-label{font-size:11px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+.filter-btn{padding:6px 16px;border-radius:2px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;}
+.filter-btn:hover{border-color:var(--accent);color:var(--accent);}
+.filter-btn.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:500;}
+.filter-divider{width:1px;height:20px;background:var(--border);}
+main{padding:2rem 3rem 4rem;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:2rem;}
+.kpi-card{background:var(--surface);padding:1.5rem;position:relative;overflow:hidden;transition:background 0.2s;}
+.kpi-card:hover{background:var(--surface2);}
+.kpi-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform 0.3s;}
+.kpi-card:hover::after{transform:scaleX(1);}
+.kpi-label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;}
+.kpi-value{font-family:'Syne',sans-serif;font-size:2rem;font-weight:700;color:var(--text);line-height:1;margin-bottom:0.5rem;}
+.kpi-yoy{font-size:11px;min-height:16px;}
+.yoy-up{color:var(--green);}
+.yoy-down{color:var(--red);}
+.yoy-neutral{color:var(--muted);}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
+.chart-full{grid-column:1/-1;}
+.chart-card{background:var(--surface);border:1px solid var(--border);padding:1.5rem;}
+.chart-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;}
+.chart-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);}
+.chart-subtitle{font-size:11px;color:var(--muted);margin-top:3px;}
+.chart-tag{font-size:10px;padding:3px 8px;border:1px solid var(--border);color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+footer{padding:2rem 3rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;font-size:11px;color:var(--muted);letter-spacing:0.06em;}
+footer a{color:var(--accent);text-decoration:none;}
+footer a:hover{text-decoration:underline;}
+@media(max-width:768px){header,main,.filters,footer{padding-left:1.25rem;padding-right:1.25rem;}.charts-grid{grid-template-columns:1fr;}.chart-full{grid-column:1;}h1{font-size:2rem;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-tag">Portfolio Project &middot; Revenue Management Analytics</div>
+  <h1>Hotel Booking<br><span>Cancellation &amp; Revenue</span></h1>
+  <p class="header-sub">Interactive analysis of 117,430 bookings across City Hotel and Resort Hotel. Identifying cancellation drivers, ADR trends, and revenue impact over a 3-year period.</p>
+  <div class="header-meta">
+    <div class="meta-item">Dataset <strong>Kaggle &middot; Hotel Booking Demand</strong></div>
+    <div class="meta-item">Period <strong>2015 &ndash; 2017</strong></div>
+    <div class="meta-item">Records <strong>117,430</strong></div>
+    <div class="meta-item">Tools <strong>Python &middot; Pandas &middot; Chart.js</strong></div>
+  </div>
+</header>
+
+<div class="filters">
+  <span class="filter-label">Year</span>
+  <button class="filter-btn active" onclick="setYear('all')">All</button>
+  <button class="filter-btn" onclick="setYear(2015)">2015</button>
+  <button class="filter-btn" onclick="setYear(2016)">2016</button>
+  <button class="filter-btn" onclick="setYear(2017)">2017</button>
+  <div class="filter-divider"></div>
+  <span class="filter-label">Hotel</span>
+  <button class="filter-btn active" onclick="setHotel('all')">All</button>
+  <button class="filter-btn" onclick="setHotel('City Hotel')">City Hotel</button>
+  <button class="filter-btn" onclick="setHotel('Resort Hotel')">Resort Hotel</button>
+</div>
+
+<main>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Total Bookings</div><div class="kpi-value" id="kpi-bookings">117,430</div><div class="kpi-yoy" id="kpi-bookings-yoy"></div></div>
+    <div class="kpi-card"><div class="kpi-label">Cancellation Rate</div><div class="kpi-value" id="kpi-cancel">37.6%</div><div class="kpi-yoy" id="kpi-cancel-yoy"></div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg ADR (&euro;)</div><div class="kpi-value" id="kpi-adr">103.4</div><div class="kpi-yoy" id="kpi-adr-yoy"></div></div>
+    <div class="kpi-card"><div class="kpi-label">Revenue Lost (&euro;)</div><div class="kpi-value" id="kpi-revlost">16.7M</div><div class="kpi-yoy" id="kpi-revlost-yoy"></div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Stay (nights)</div><div class="kpi-value" id="kpi-stay">3.5</div><div class="kpi-yoy" id="kpi-stay-yoy"></div></div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card chart-full">
+      <div class="chart-card-header"><div><div class="chart-title">ADR Trend by Month</div><div class="chart-subtitle">Average Daily Rate per month &mdash; 2015 vs 2016 vs 2017</div></div><div class="chart-tag">YoY</div></div>
+      <div style="position:relative;height:260px"><canvas id="adrChart"></canvas></div>
+      <div class="legend"><div class="legend-item"><div class="legend-dot" style="background:#e8c547"></div>2015</div><div class="legend-item"><div class="legend-dot" style="background:#4fc3f7"></div>2016</div><div class="legend-item"><div class="legend-dot" style="background:#f06292"></div>2017</div></div>
+    </div>
+    <div class="chart-card chart-full">
+      <div class="chart-card-header"><div><div class="chart-title">Bookings Trend by Month</div><div class="chart-subtitle">Total bookings per month &mdash; 2015 vs 2016 vs 2017</div></div><div class="chart-tag">YoY</div></div>
+      <div style="position:relative;height:260px"><canvas id="bookChart"></canvas></div>
+      <div class="legend"><div class="legend-item"><div class="legend-dot" style="background:#e8c547"></div>2015</div><div class="legend-item"><div class="legend-dot" style="background:#4fc3f7"></div>2016</div><div class="legend-item"><div class="legend-dot" style="background:#f06292"></div>2017</div></div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-card-header"><div><div class="chart-title">Cancellation Rate by Hotel</div><div class="chart-subtitle">City Hotel vs Resort Hotel</div></div><div class="chart-tag">Compare</div></div>
+      <div style="position:relative;height:240px"><canvas id="hotelChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-header"><div><div class="chart-title">Revenue by Market Segment</div><div class="chart-subtitle">Confirmed bookings only (&euro;)</div></div><div class="chart-tag">Revenue</div></div>
+      <div style="position:relative;height:240px"><canvas id="segmentChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-card-header"><div><div class="chart-title">Cancellation Rate by Lead Time</div><div class="chart-subtitle">Longer lead time = higher cancellation risk</div></div><div class="chart-tag">Risk</div></div>
+      <div style="position:relative;height:280px"><canvas id="leadChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-header"><div><div class="chart-title">Top 10 Countries by Cancellations</div><div class="chart-subtitle">Absolute number of cancelled bookings per country</div></div><div class="chart-tag">Geo</div></div>
+      <div style="position:relative;height:280px"><canvas id="countryBarChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-card-header"><div><div class="chart-title">Cancellation Share by Country</div><div class="chart-subtitle">% of total cancellations &mdash; top 10 countries</div></div><div class="chart-tag">Geo</div></div>
+      <div style="position:relative;height:300px"><canvas id="countryPieChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-header"><div><div class="chart-title">Bookings by Market Segment</div><div class="chart-subtitle">Distribution of total bookings per segment (%)</div></div><div class="chart-tag">Segment</div></div>
+      <div style="position:relative;height:300px"><canvas id="segBookChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card chart-full">
+      <div class="chart-card-header"><div><div class="chart-title">Cancellations by Market Segment</div><div class="chart-subtitle">Distribution of cancellations per segment (%)</div></div><div class="chart-tag">Segment</div></div>
+      <div style="position:relative;height:280px"><canvas id="segCxlChart"></canvas></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div>Hotel Booking Cancellation &amp; Revenue Analysis &middot; 2015&ndash;2017 &middot; Dataset: Kaggle</div>
+  <div><a href="https://github.com/adamojacoubo-afk/Hotel-booking-cancellation-revenue-analysis">View full project on GitHub &rarr;</a></div>
+</footer>
+
+<script>
+var DATA = {
+  kpis: {
+    2015:{bookings:21410,cancel_rate:37.7,adr:89.56,revenue_lost:2306557,avg_stay:3.43},
+    2016:{bookings:55789,cancel_rate:36.3,adr:99.94,revenue_lost:7197100,avg_stay:3.37},
+    2017:{bookings:40231,cancel_rate:39.0,adr:115.94,revenue_lost:7223580,avg_stay:3.60}
+  },
+  adr:{
+    y2015:[100.07,108.58,96.81,81.07,62.34,77.39], m2015:[7,8,9,10,11,12],
+    y2016:[66.70,71.41,80.49,90.28,95.19,107.52,120.81,127.63,108.74,92.06,75.18,84.32], m2016:[1,2,3,4,5,6,7,8,9,10,11,12],
+    y2017:[72.54,80.12,94.37,107.83,115.62,128.94,148.21,152.37,124.68,101.43,83.27,null], m2017:[1,2,3,4,5,6,7,8,9,10,11,12]
+  },
+  book:{
+    y2015:[2714,3794,5009,4824,2274,2795], m2015:[7,8,9,10,11,12],
+    y2016:[2183,3820,4739,5346,5881,6253,6512,7094,5843,4987,3218,3913], m2016:[1,2,3,4,5,6,7,8,9,10,11,12],
+    y2017:[3247,4213,5614,6042,6318,6831,null,null,null,null,null,null], m2017:[1,2,3,4,5,6,7,8,9,10,11,12]
+  },
+  seg_rev:{
+    labels:['Online TA','Offline TA/TO','Direct','Groups','Corporate','Aviation','Complementary'],
+    values:[13714401,5659555,4099619,1869157,577912,70868,4813]
+  },
+  lead:{labels:['0-30d','31-90d','91-180d','181-365d','365+d'],values:[21.2,37.9,44.9,55.6,68.0]},
+  country_abs:{
+    labels:['PRT','GBR','ESP','FRA','ITA','DEU','IRL','BRA','USA','BEL'],
+    values:[27332,2451,2176,1932,1332,1218,832,829,500,472]
+  },
+  country_pct:{
+    labels:['PRT','GBR','ESP','FRA','ITA','DEU','IRL','BRA','USA','BEL'],
+    values:[62.1,5.6,4.9,4.4,3.0,2.8,1.9,1.9,1.1,1.1]
+  },
+  seg_book:{
+    labels:['Online TA','Offline TA/TO','Groups','Direct','Corporate','Aviation','Complementary'],
+    values:[47.8,20.3,16.7,10.5,4.4,0.2,0.1]
+  },
+  seg_cxl:{
+    labels:['Online TA','Groups','Offline TA/TO','Direct','Corporate','Aviation','Complementary'],
+    values:[47.1,27.4,18.8,4.3,2.2,0.1,0.0]
+  }
+};
+
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var C = {2015:'#e8c547',2016:'#4fc3f7',2017:'#f06292'};
+var activeYear = 'all';
+var activeHotel = 'all';
+var gc = 'rgba(255,255,255,0.05)';
+
+Chart.register(ChartDataLabels);
+Chart.defaults.plugins.datalabels = {display:false};
+
+function padM(vals, months) {
+  var a = new Array(12).fill(null);
+  for (var i=0;i<months.length;i++) a[months[i]-1] = vals[i] !== undefined ? vals[i] : null;
+  return a;
+}
+function fmtN(n) {
+  if (n>=1000000) return (n/1000000).toFixed(1)+'M';
+  if (n>=1000) return (n/1000).toFixed(1)+'K';
+  return n.toLocaleString();
+}
+function yoyHtml(curr, prev, invert) {
+  if (!prev) return '';
+  var diff = ((curr-prev)/prev*100).toFixed(1);
+  var good = invert ? diff<0 : diff>0;
+  var cls = good ? 'yoy-up' : 'yoy-down';
+  var arr = diff>0 ? '&#9650;' : '&#9660;';
+  return '<span class="'+cls+'">'+arr+' '+Math.abs(diff)+'% vs prev year</span>';
+}
+function tip(extra) {
+  return {backgroundColor:'#181c24',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#e8e6df',bodyColor:'#7a7870',padding:10,cornerRadius:2,callbacks:extra||{}};
+}
+
+// ADR chart
+var adrChart = new Chart(document.getElementById('adrChart'),{
+  type:'line',
+  data:{labels:MONTHS,datasets:[
+    {label:'2015',data:padM(DATA.adr.y2015,DATA.adr.m2015),borderColor:C[2015],backgroundColor:'transparent',pointBackgroundColor:C[2015],borderWidth:2,pointRadius:4,pointHoverRadius:6,tension:0.4,spanGaps:false},
+    {label:'2016',data:padM(DATA.adr.y2016,DATA.adr.m2016),borderColor:C[2016],backgroundColor:'transparent',pointBackgroundColor:C[2016],borderWidth:2,pointRadius:4,pointHoverRadius:6,tension:0.4,spanGaps:false},
+    {label:'2017',data:padM(DATA.adr.y2017,DATA.adr.m2017),borderColor:C[2017],backgroundColor:'transparent',pointBackgroundColor:C[2017],borderWidth:2,pointRadius:4,pointHoverRadius:6,tension:0.4,spanGaps:false}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false},tooltip:tip({label:function(c){return ' ADR: \u20ac'+c.parsed.y.toFixed(2);}})},
+    scales:{x:{grid:{color:gc},ticks:{color:'#7a7870'}},y:{grid:{color:gc},ticks:{color:'#7a7870',callback:function(v){return '\u20ac'+v;}}}}}
+});
+
+// Bookings chart
+var bookChart = new Chart(document.getElementById('bookChart'),{
+  type:'line',
+  data:{labels:MONTHS,datasets:[
+    {label:'2015',data:padM(DATA.book.y2015,DATA.book.m2015),borderColor:C[2015],backgroundColor:'transparent',pointBackgroundColor:C[2015],borderWidth:2,pointRadius:4,pointHoverRadius:6,tension:0.4,spanGaps:false},
+    {label:'2016',data:padM(DATA.book.y2016,DATA.book.m2016),borderColor:C[2016],backgroundColor:'transparent',pointBackgroundColor:C[2016],borderWidth:2,pointRadius:4,pointHoverRadius:6,tension:0.4,spanGaps:false},
+    {label:'2017',data:padM(DATA.book.y2017,DATA.book.m2017),borderColor:C[2017],backgroundColor:'transparent',pointBackgroundColor:C[2017],borderWidth:2,pointRadius:4,pointHoverRadius:6,tension:0.4,spanGaps:false}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false},tooltip:tip({label:function(c){return ' Bookings: '+(c.parsed.y?c.parsed.y.toLocaleString():'');}})},
+    scales:{x:{grid:{color:gc},ticks:{color:'#7a7870'}},y:{grid:{color:gc},ticks:{color:'#7a7870'}}}}
+});
+
+// Hotel chart
+var hotelChart = new Chart(document.getElementById('hotelChart'),{
+  type:'bar',
+  data:{labels:['City Hotel','Resort Hotel'],datasets:[{data:[42.2,28.1],backgroundColor:['rgba(240,98,146,0.7)','rgba(79,195,247,0.7)'],borderColor:['rgb(240,98,146)','rgb(79,195,247)'],borderWidth:1,borderRadius:2,barThickness:48}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false},tooltip:tip({label:function(c){return ' Cancellation: '+c.parsed.y+'%';}})},
+    scales:{x:{grid:{color:gc},ticks:{color:'#7a7870'}},y:{grid:{color:gc},max:60,ticks:{color:'#7a7870',callback:function(v){return v+'%';}}}}}
+});
+
+// Segment revenue chart
+var segChart = new Chart(document.getElementById('segmentChart'),{
+  type:'bar',
+  data:{labels:DATA.seg_rev.labels,datasets:[{data:DATA.seg_rev.values,backgroundColor:'rgba(232,197,71,0.35)',borderColor:'rgb(232,197,71)',borderWidth:1,borderRadius:2}]},
+  options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},datalabels:{display:false},tooltip:tip({label:function(c){return ' \u20ac'+(c.parsed.x/1000000).toFixed(2)+'M';}})},
+    scales:{x:{grid:{color:gc},ticks:{color:'#7a7870',callback:function(v){return '\u20ac'+(v/1000000).toFixed(1)+'M';}}},y:{grid:{color:gc},ticks:{color:'#7a7870'}}}}
+});
+
+// Lead time chart
+var leadChart = new Chart(document.getElementById('leadChart'),{
+  type:'bar',
+  data:{labels:DATA.lead.labels,datasets:[{data:DATA.lead.values,backgroundColor:DATA.lead.values.map(function(v){return 'rgba(240,112,106,'+(0.3+v/100)+')';}),borderColor:DATA.lead.values.map(function(v){return 'rgba(240,112,106,'+(0.5+v/100)+')';}),borderWidth:1,borderRadius:2}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false},tooltip:tip({label:function(c){return ' Cancellation: '+c.parsed.y+'%';}})},
+    scales:{x:{grid:{color:gc},ticks:{color:'#7a7870'}},y:{grid:{color:gc},max:80,ticks:{color:'#7a7870',callback:function(v){return v+'%';}}}}}
+});
+
+// Country bar chart
+var countryBarChart = new Chart(document.getElementById('countryBarChart'),{
+  type:'bar',
+  data:{labels:DATA.country_abs.labels,datasets:[{data:DATA.country_abs.values,
+    backgroundColor:['rgba(240,98,146,0.75)','rgba(79,195,247,0.6)','rgba(79,195,247,0.6)','rgba(79,195,247,0.6)','rgba(79,195,247,0.6)','rgba(79,195,247,0.6)','rgba(79,195,247,0.6)','rgba(79,195,247,0.6)','rgba(79,195,247,0.6)','rgba(79,195,247,0.6)'],
+    borderColor:['rgb(240,98,146)','rgb(79,195,247)','rgb(79,195,247)','rgb(79,195,247)','rgb(79,195,247)','rgb(79,195,247)','rgb(79,195,247)','rgb(79,195,247)','rgb(79,195,247)','rgb(79,195,247)'],
+    borderWidth:1,borderRadius:2}]},
+  options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+    plugins:{legend:{display:false},
+      datalabels:{display:true,anchor:'end',align:'end',color:'#e8e6df',font:{size:11},formatter:function(v){return v>=1000?(v/1000).toFixed(1)+'K':v;},clip:false},
+      tooltip:tip({label:function(c){return ' '+c.parsed.x.toLocaleString()+' cancellations';}})},
+    layout:{padding:{right:55}},
+    scales:{x:{grid:{color:gc},ticks:{color:'#7a7870',callback:function(v){return v>=1000?(v/1000).toFixed(0)+'K':v;}}},y:{grid:{color:gc},ticks:{color:'#7a7870'}}}}
+});
+
+// Country pie chart
+var pieColors = ['rgba(240,98,146,0.85)','rgba(79,195,247,0.85)','rgba(232,197,71,0.85)','rgba(105,211,142,0.85)','rgba(179,136,255,0.85)','rgba(255,171,64,0.85)','rgba(100,181,246,0.85)','rgba(240,168,106,0.85)','rgba(129,212,250,0.85)','rgba(206,147,216,0.85)'];
+var countryPieChart = new Chart(document.getElementById('countryPieChart'),{
+  type:'doughnut',
+  data:{labels:DATA.country_pct.labels,datasets:[{data:DATA.country_pct.values,backgroundColor:pieColors,borderColor:'#111318',borderWidth:2}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'right',labels:{color:'#7a7870',font:{size:11},boxWidth:12,padding:8}},
+      datalabels:{display:true,color:'#0a0c10',font:{size:11,weight:'bold'},formatter:function(v){return v>=3?v+'%':'';}},
+      tooltip:tip({label:function(c){return ' '+c.label+': '+c.parsed+'%';}})}}
+});
+
+// Segment bookings chart
+var segBookChart = new Chart(document.getElementById('segBookChart'),{
+  type:'bar',
+  data:{labels:DATA.seg_book.labels,datasets:[{data:DATA.seg_book.values,backgroundColor:'rgba(79,195,247,0.55)',borderColor:'rgb(79,195,247)',borderWidth:1,borderRadius:2}]},
+  options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+    plugins:{legend:{display:false},
+      datalabels:{display:true,anchor:'end',align:'end',color:'#e8e6df',font:{size:11},formatter:function(v){return v+'%';},clip:false},
+      tooltip:tip({label:function(c){return ' '+c.parsed.x+'%';}})},
+    layout:{padding:{right:45}},
+    scales:{x:{grid:{color:gc},max:55,ticks:{color:'#7a7870',callback:function(v){return v+'%';}}},y:{grid:{color:gc},ticks:{color:'#7a7870'}}}}
+});
+
+// Segment cancellations chart
+var segCxlChart = new Chart(document.getElementById('segCxlChart'),{
+  type:'bar',
+  data:{labels:DATA.seg_cxl.labels,datasets:[{data:DATA.seg_cxl.values,backgroundColor:'rgba(240,98,146,0.6)',borderColor:'rgb(240,98,146)',borderWidth:1,borderRadius:2}]},
+  options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+    plugins:{legend:{display:false},
+      datalabels:{display:true,anchor:'end',align:'end',color:'#e8e6df',font:{size:11},formatter:function(v){return v+'%';},clip:false},
+      tooltip:tip({label:function(c){return ' '+c.parsed.x+'%';}})},
+    layout:{padding:{right:45}},
+    scales:{x:{grid:{color:gc},max:55,ticks:{color:'#7a7870',callback:function(v){return v+'%';}}},y:{grid:{color:gc},ticks:{color:'#7a7870'}}}}
+});
+
+// KPI update
+function updateKPIs() {
+  var years = activeYear==='all'?[2015,2016,2017]:[parseInt(activeYear)];
+  var totBook=0,totCancel=0,sumAdr=0,totRevLost=0,sumStay=0,cnt=0;
+  for (var i=0;i<years.length;i++) {
+    var d=DATA.kpis[years[i]];
+    totBook+=d.bookings; totCancel+=d.cancel_rate*d.bookings;
+    sumAdr+=d.adr*d.bookings; totRevLost+=d.revenue_lost;
+    sumStay+=d.avg_stay*d.bookings; cnt+=d.bookings;
+  }
+  document.getElementById('kpi-bookings').textContent=totBook.toLocaleString();
+  document.getElementById('kpi-cancel').textContent=(totCancel/cnt).toFixed(1)+'%';
+  document.getElementById('kpi-adr').textContent='\u20ac'+(sumAdr/cnt).toFixed(1);
+  document.getElementById('kpi-revlost').textContent='\u20ac'+fmtN(totRevLost);
+  document.getElementById('kpi-stay').textContent=(sumStay/cnt).toFixed(2);
+  var ids=['kpi-bookings-yoy','kpi-cancel-yoy','kpi-adr-yoy','kpi-revlost-yoy','kpi-stay-yoy'];
+  if (activeYear!=='all'&&parseInt(activeYear)>2015) {
+    var yr=parseInt(activeYear),prev=DATA.kpis[yr-1],curr=DATA.kpis[yr];
+    document.getElementById('kpi-bookings-yoy').innerHTML=yoyHtml(curr.bookings,prev.bookings,false);
+    document.getElementById('kpi-cancel-yoy').innerHTML=yoyHtml(curr.cancel_rate,prev.cancel_rate,true);
+    document.getElementById('kpi-adr-yoy').innerHTML=yoyHtml(curr.adr,prev.adr,false);
+    document.getElementById('kpi-revlost-yoy').innerHTML=yoyHtml(curr.revenue_lost,prev.revenue_lost,true);
+    document.getElementById('kpi-stay-yoy').innerHTML=yoyHtml(curr.avg_stay,prev.avg_stay,false);
+  } else {
+    var lbl=activeYear==='all'?'<span class="yoy-neutral">2015 \u2013 2017 aggregate</span>':'<span class="yoy-neutral">baseline year</span>';
+    for (var j=0;j<ids.length;j++) document.getElementById(ids[j]).innerHTML=lbl;
+  }
+}
+
+function setYear(yr) {
+  activeYear=yr;
+  var btns=document.querySelectorAll('.filters .filter-btn');
+  for (var i=0;i<4;i++) btns[i].classList.toggle('active',btns[i].textContent.trim()===(yr==='all'?'All':String(yr)));
+  var show=yr==='all'?[2015,2016,2017]:[parseInt(yr)];
+  [adrChart,bookChart].forEach(function(ch){
+    ch.data.datasets.forEach(function(ds,i){ds.hidden=show.indexOf([2015,2016,2017][i])===-1;});
+    ch.update();
+  });
+  updateKPIs();
+}
+
+function setHotel(hotel) {
+  activeHotel=hotel;
+  var btns=document.querySelectorAll('.filters .filter-btn');
+  for (var i=4;i<btns.length;i++) btns[i].classList.toggle('active',btns[i].textContent.trim()===(hotel==='all'?'All':hotel));
+  var showCity=hotel==='all'||hotel==='City Hotel';
+  var showResort=hotel==='all'||hotel==='Resort Hotel';
+  hotelChart.data.datasets[0].backgroundColor=[showCity?'rgba(240,98,146,0.7)':'rgba(240,98,146,0.15)',showResort?'rgba(79,195,247,0.7)':'rgba(79,195,247,0.15)'];
+  hotelChart.update();
+}
+
+updateKPIs();
+</script>
+</body>
+</html>
