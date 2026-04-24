@@ -47,7 +47,28 @@ The goal is to support Revenue Management decisions using data-driven insights.
 
 ---
 
-## Key Insights
+## 🔍 Key Business Insights
+
+- The overall cancellation rate is approximately **37.5%**, meaning that nearly 1 out of 3 bookings does not materialize, creating a significant gap between forecasted and realized revenue.
+- The **City Hotel** shows a structurally higher cancellation rate compared to the Resort Hotel, indicating a higher exposure to demand volatility and last-minute booking behavior.
+- Bookings with **long lead times** are significantly more likely to cancel, increasing forecast uncertainty and reducing revenue reliability.
+- Specific **market segments and distribution channels** (e.g. OTA) contribute disproportionately to cancellations, highlighting a segmentation imbalance.
+- Cancelled bookings represent substantial **revenue leakage**, impacting both ADR performance and occupancy optimization.
+
+## 💰 Revenue Impact
+
+High cancellation levels lead to:
+- Revenue dilution (unsold rooms or last-minute discounting)
+- Forecast inaccuracy
+- Operational inefficiencies
+
+## 🎯 Revenue Management Recommendations
+
+- Implement **stricter cancellation and deposit policies** for high-risk segments and long lead-time bookings.
+- Introduce **non-refundable and advance purchase rates** to secure early revenue.
+- Monitor **booking pace and lead time behavior** daily, integrating them into forecasting models.
+- Apply **dynamic pricing strategies** to protect ADR against cancellation risk.
+- Shift from general forecasting to **segment-based demand forecasting**, improving accuracy and pricing decisions.## Key Insights
 
 - Cancellation rate is approximately **37.5%**, meaning 1 out of 3 bookings is lost.
 - City Hotel shows a higher cancellation rate compared to Resort Hotel.
@@ -55,24 +76,10 @@ The goal is to support Revenue Management decisions using data-driven insights.
 - Certain market segments contribute more to cancellations.
 - Cancelled bookings represent significant **revenue lost**.
 
----
-
-## Revenue Management Recommendations
-
-- Implement stricter cancellation policies for high-risk segments.
-- Introduce non-refundable or advance purchase rates.
-- Monitor booking pace and lead time continuously.
-- Apply dynamic pricing strategies to protect ADR.
-- Focus on segment-based forecasting instead of general forecasting.
-
----
-
 ## Project Structure
 
 - `EDA_Hotel_Booking_PROFESSIONAL.ipynb` → Full analysis
 - `images/` → Charts and visual insights
-
----
 
 ## Author
 
