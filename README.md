@@ -1,6 +1,10 @@
 
-# Hotel Booking Cancellation & Revenue Analysis
+# Hotel Booking Cancellation & Revenue Analysis 
+## 🚀 Live Interactive Dashboard
 
+👉 **[View the Interactive Dashboard](https://adamojacoubo-afk.github.io/Hotel-booking-cancellation-revenue-analysis/dashboard.html)**
+
+> Fully interactive dashboard built in HTML/CSS/JS — filter by year and hotel type, explore ADR trends, cancellation patterns, market segments and country analysis.
 ## Objective
 This project analyzes hotel booking data to identify cancellation patterns and estimate the impact on potential revenue.
 
